@@ -97,6 +97,21 @@ def test_model_getattr():
     method = model.test_method
     assert isinstance(method, Method)
     assert method.name == "test_method"
+    assert method.model == model
+
+
+def test_method_init():
+    mocked_proxy = MagicMock()
+    model = Model("test.model", mocked_proxy, "test_db", 5, "test_password")
+    method = Method("test_method", model)
+    assert method.name == "test_method"
+    assert method.model == model
+
+
+def test_method_call():
+    mocked_proxy = MagicMock()
+    model = Model("test.model", mocked_proxy, "test_db", 5, "test_password")
+    method = Method("test_method", model)
     method("arg1", kwarg1="test_kwarg")
     mocked_proxy.execute_kw.assert_called_with(
         "test_db",
