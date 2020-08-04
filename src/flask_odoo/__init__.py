@@ -24,12 +24,11 @@ class Odoo:
 
     def teardown(self, exception):
         ctx = _app_ctx_stack.top
-        if hasattr(ctx, "odoo_common"):
-            delattr(ctx, "odoo_common")
-        if hasattr(ctx, "odoo_uid"):
-            delattr(ctx, "odoo_uid")
+        for name in ["odoo_common", "odoo_uid", "odoo_object"]:
+            if hasattr(ctx, name):
+                delattr(ctx, name)
 
-    def create_common(self):
+    def create_common_endpoint(self):
         ODOO_URL = current_app.config["ODOO_URL"]
         common = xmlrpc.client.ServerProxy(
             "{}/xmlrpc/2/common".format(ODOO_URL)
@@ -41,7 +40,7 @@ class Odoo:
         ctx = _app_ctx_stack.top
         if ctx is not None:
             if not hasattr(ctx, "odoo_common"):
-                ctx.odoo_common = self.create_common()
+                ctx.odoo_common = self.create_common_endpoint()
             return ctx.odoo_common
 
     def authenticate(self):
@@ -61,3 +60,18 @@ class Odoo:
             if not hasattr(ctx, "odoo_uid"):
                 ctx.odoo_uid = self.authenticate()
             return ctx.odoo_common
+
+    def create_object_endpoint(self):
+        ODOO_URL = current_app.config["ODOO_URL"]
+        object = xmlrpc.client.ServerProxy(
+            "{}/xmlrpc/2/object".format(ODOO_URL)
+        )
+        return object
+
+    @property
+    def object(self):
+        ctx = _app_ctx_stack.top
+        if ctx is not None:
+            if not hasattr(ctx, "odoo_object"):
+                ctx.odoo_object = self.create_object_endpoint()
+            return ctx.odoo_object

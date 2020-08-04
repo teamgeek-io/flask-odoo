@@ -23,6 +23,8 @@ app.config["ODOO_DB"] = "odoo"
 app.config["ODOO_USERNAME"] = "admin"
 app.config["ODOO_PASSWORD"] = "admin"
 odoo = Odoo(app)
+
+version = odoo.common.version()
 ```
 
 # Contributing
