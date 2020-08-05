@@ -2,6 +2,7 @@
 black
 doc8
 flake8
+Flask
 pre-commit
 pytest
 pytest-cov
