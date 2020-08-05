@@ -25,7 +25,7 @@ def get_version(rel_path):
         raise RuntimeError("Unable to find version string.")
 
 
-version = get_version("src/rsaidnumber/__init__.py")
+version = get_version("src/flask_odoo/__init__.py")
 
 
 class VerifyVersionCommand(install):
