@@ -52,7 +52,7 @@ format:
 
 .PHONY: test
 test: lint
-	PYTHONPATH="$(PYTHONPATH)" 		\
+	PYTHONPATH=$(PYTHONPATH) 		\
 	$(bin_dir)/pytest -vvs 			\
 		--cov=$(source_dir) 		\
 		--cov-report term-missing 	\
@@ -69,6 +69,7 @@ dist:
 
 .PHONY: verify
 upload: dist
+	PYTHONPATH=$(PYTHONPATH) 				\
 	$(bin_dir)/twine upload $(dist_dir)/*
 
 .PHONY: clean
