@@ -27,7 +27,7 @@ class Odoo:
         for name in ["odoo_common", "odoo_object"]:
             server_proxy = getattr(ctx, name, None)
             if server_proxy:
-                server_proxy.close()
+                server_proxy._ServerProxy__close()
                 delattr(ctx, name)
         if hasattr(ctx, "odoo_uid"):
             delattr(ctx, "odoo_uid")
