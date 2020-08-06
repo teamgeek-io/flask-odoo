@@ -3,7 +3,7 @@ import xmlrpc.client
 
 from flask import _app_ctx_stack, current_app
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 logger = logging.getLogger(__name__)
 

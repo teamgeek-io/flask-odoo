@@ -67,7 +67,7 @@ dist:
 	$(bin_dir)/python setup.py sdist
 	$(bin_dir)/python setup.py bdist_wheel
 
-.PHONY: verify
+.PHONY: upload
 upload: dist
 	PYTHONPATH=$(PYTHONPATH) 				\
 	$(bin_dir)/twine upload $(dist_dir)/*
