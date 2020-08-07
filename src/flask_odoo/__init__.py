@@ -120,8 +120,8 @@ class ObjectProxy:
             return (
                 "<ObjectProxy.Method("
                 f"model_name={self.model_name}, "
-                f"name='{self.name}"
-                "')>"
+                f"name='{self.name}'"
+                ")>"
             )
 
     def __init__(self, odoo: Odoo, model_name: str):
