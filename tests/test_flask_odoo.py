@@ -1,12 +1,15 @@
 from unittest.mock import MagicMock
 
-from flask_odoo import Odoo, ObjectProxy
+import schematics.models
+
+from flask_odoo import ObjectProxy, Odoo
 
 
 def test_odoo_init(app, mocker):
     init_app_mock = mocker.patch.object(Odoo, "init_app")
     odoo = Odoo(app)
     assert odoo.app == app
+    assert isinstance(odoo.Model, type)
     init_app_mock.assert_called_with(app)
 
 
@@ -61,6 +64,20 @@ def test_odoo_getitem(app, app_context, mocker):
     assert isinstance(object_proxy, ObjectProxy)
     object_proxy.odoo == odoo
     assert object_proxy.model_name == "test.model"
+
+
+def test_odoo_make_model_base(app, app_context, mocker):
+    odoo = Odoo(app)
+    Model = odoo.make_model_base()
+
+    class Partner(Model):
+        _name = "res.partner"
+
+    partner = Partner()
+
+    assert isinstance(partner, schematics.models.Model)
+    assert partner.odoo is odoo
+    assert partner._name == "res.partner"
 
 
 def test_object_proxy_init():
