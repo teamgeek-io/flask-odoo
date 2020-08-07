@@ -66,6 +66,6 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     python_requires=">=3.6",
-    install_requires=["Flask>=1.0.4"],
+    install_requires=["Flask>=1.0.4", "schematics>=2.1.0"],
     cmdclass={"verify": VerifyVersionCommand},
 )
