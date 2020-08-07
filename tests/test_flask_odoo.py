@@ -80,6 +80,17 @@ def test_odoo_make_model_base(app, app_context, mocker):
     assert partner._name == "res.partner"
 
 
+def test_odoo_make_model_base_no_name(app, app_context, mocker):
+    odoo = Odoo(app)
+    Model = odoo.make_model_base()
+
+    class Partner(Model):
+        pass
+
+    partner = Partner()
+    assert partner._name == "partner"
+
+
 def test_object_proxy_init():
     odoo_mock = MagicMock()
     object_proxy = ObjectProxy(odoo_mock, "test.model")

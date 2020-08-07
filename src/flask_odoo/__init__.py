@@ -92,6 +92,12 @@ class Odoo:
             odoo = self
             _name = None
 
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
+                if not self._name:
+                    self._name = self.__class__.__name__.lower()
+
         return Model
 
 
