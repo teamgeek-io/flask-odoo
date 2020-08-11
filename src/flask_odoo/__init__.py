@@ -1,7 +1,7 @@
 import logging
 import xmlrpc.client
 
-import schematics.models
+import schematics
 from flask import _app_ctx_stack, current_app
 
 __version__ = "0.0.2"
@@ -88,17 +88,22 @@ class Odoo:
     def make_model_base(self):
         """Return a base that all models will inherit from."""
 
-        class Model(schematics.models.Model):
+        class BaseModel(schematics.models.Model):
             odoo = self
             _name = None
 
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
+            id = schematics.types.IntType()
 
-                if not self._name:
-                    self._name = self.__class__.__name__.lower()
+            @classmethod
+            def _model_name(cls):
+                return cls._name or cls.__name__.lower()
 
-        return Model
+            @classmethod
+            def search_count(cls, domain=[]):
+                model_name = cls._model_name()
+                return cls.odoo[model_name].search_count(domain)
+
+        return BaseModel
 
 
 class ObjectProxy:

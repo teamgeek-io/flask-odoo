@@ -53,11 +53,9 @@ def test_odoo_object(app, app_context, mocker):
     )
 
 
-def test_odoo_getitem(app, app_context, mocker):
+def test_odoo_getitem(app, app_context):
     app_context.odoo_common = MagicMock()
-    mocker.patch.object(
-        app_context.odoo_common, "authenticate", return_value=1
-    )
+    app_context.odoo_common.authenticate.return_value = 1
     app_context.odoo_object = MagicMock()
     odoo = Odoo(app)
     object_proxy = odoo["test.model"]
@@ -66,7 +64,7 @@ def test_odoo_getitem(app, app_context, mocker):
     assert object_proxy.model_name == "test.model"
 
 
-def test_odoo_make_model_base(app, app_context, mocker):
+def test_odoo_make_model_base(app, app_context):
     odoo = Odoo(app)
     Model = odoo.make_model_base()
 
@@ -78,17 +76,6 @@ def test_odoo_make_model_base(app, app_context, mocker):
     assert isinstance(partner, schematics.models.Model)
     assert partner.odoo is odoo
     assert partner._name == "res.partner"
-
-
-def test_odoo_make_model_base_no_name(app, app_context, mocker):
-    odoo = Odoo(app)
-    Model = odoo.make_model_base()
-
-    class Partner(Model):
-        pass
-
-    partner = Partner()
-    assert partner._name == "partner"
 
 
 def test_object_proxy_init():
@@ -116,7 +103,7 @@ def test_object_proxy_method_init():
     assert method.name == "test_method"
 
 
-def test_object_proxy_method_call(app, app_context, mocker):
+def test_object_proxy_method_call(app, app_context):
     odoo_mock = MagicMock()
     odoo_mock.uid = 1
     odoo_mock.object = MagicMock()
@@ -131,3 +118,33 @@ def test_object_proxy_method_call(app, app_context, mocker):
         ("arg1",),
         {"kwarg1": "test_kwarg"},
     )
+
+
+def test_base_model_no_name(app, app_context):
+    odoo = Odoo(app)
+    Model = odoo.make_model_base()
+
+    class Partner(Model):
+        pass
+
+    partner = Partner()
+    assert partner._model_name() == "partner"
+
+
+def test_base_model_search_count(app, app_context):
+    odoo = Odoo(app)
+    app_context.odoo_common = MagicMock()
+    app_context.odoo_common.authenticate.return_value = 1
+    app_context.odoo_object = MagicMock()
+    app_context.odoo_object.execute_kw.return_value = 2
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+
+    domain = [["is_company", "=", True]]
+    count = Partner.search_count(domain)
+
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo", 1, "admin", "res.partner", "search_count", (domain,), {}
+    )
+    assert count == 2
