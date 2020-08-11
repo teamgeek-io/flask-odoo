@@ -1,6 +1,7 @@
 import logging
 import xmlrpc.client
 
+import schematics
 from flask import _app_ctx_stack, current_app
 
 __version__ = "0.0.2"
@@ -9,17 +10,24 @@ logger = logging.getLogger(__name__)
 
 
 class Odoo:
-    """Stores Odoo XML RPC server proxies and authentication information
+    """Stores Odoo XML-RPC server proxies and authentication information
     inside Flask's application context.
 
     """
 
     def __init__(self, app=None):
         self.app = app
+        self.Model = self.make_model_base()
+
         if self.app is not None:
             self.init_app(app)
 
     def init_app(self, app):
+        app.config.setdefault("ODOO_URL", "")
+        app.config.setdefault("ODOO_DB", "")
+        app.config.setdefault("ODOO_USERNAME", "")
+        app.config.setdefault("ODOO_PASSWORD", "")
+
         app.teardown_appcontext(self.teardown)
 
     def teardown(self, exception):
@@ -33,8 +41,8 @@ class Odoo:
             delattr(ctx, "odoo_uid")
 
     def create_common_proxy(self):
-        ODOO_URL = current_app.config["ODOO_URL"]
-        common = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/common")
+        url = current_app.config["ODOO_URL"]
+        common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
         return common
 
     @property
@@ -47,12 +55,10 @@ class Odoo:
 
     def authenticate(self):
         """Returns a user identifier (uid) used in authenticated calls."""
-        ODOO_DB = current_app.config["ODOO_DB"]
-        ODOO_USERNAME = current_app.config["ODOO_USERNAME"]
-        ODOO_PASSWORD = current_app.config["ODOO_PASSWORD"]
-        uid = self.common.authenticate(
-            ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {}
-        )
+        db = current_app.config["ODOO_DB"]
+        username = current_app.config["ODOO_USERNAME"]
+        password = current_app.config["ODOO_PASSWORD"]
+        uid = self.common.authenticate(db, username, password, {})
         return uid
 
     @property
@@ -64,8 +70,8 @@ class Odoo:
             return ctx.odoo_uid
 
     def create_object_proxy(self):
-        ODOO_URL = current_app.config["ODOO_URL"]
-        object = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
+        url = current_app.config["ODOO_URL"]
+        object = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
         return object
 
     @property
@@ -77,69 +83,74 @@ class Odoo:
             return ctx.odoo_object
 
     def __getitem__(self, key):
-        ODOO_DB = current_app.config["ODOO_DB"]
-        ODOO_PASSWORD = current_app.config["ODOO_PASSWORD"]
-        return Model(key, self.object, ODOO_DB, self.uid, ODOO_PASSWORD)
+        return ObjectProxy(self, key)
+
+    def make_model_base(self):
+        """Return a base that all models will inherit from."""
+
+        # TODO: In future, consider defining BaseModel outside this function
+        class BaseModel(schematics.models.Model):
+            odoo = self
+            _name = None
+
+            id = schematics.types.IntType()
+
+            @classmethod
+            def _model_name(cls):
+                return cls._name or cls.__name__.lower()
+
+            @classmethod
+            def search_count(cls, domain=[]):
+                model_name = cls._model_name()
+                return cls.odoo[model_name].search_count(domain)
+
+            @classmethod
+            def search_read(cls, domain=[], offset=None, limit=None):
+                model_name = cls._model_name()
+                fields = [
+                    field.serialized_name or name
+                    for name, field in cls._schema.fields.items()
+                ]
+                kwargs = {"fields": fields}
+                if offset:
+                    kwargs["offset"] = offset
+                if limit:
+                    kwargs["limit"] = limit
+                records = cls.odoo[model_name].search_read(domain, **kwargs)
+                return [cls(rec) for rec in records]
+
+            @classmethod
+            def search_by_id(cls, id):
+                domain = [["id", "=", id]]
+                objects = cls.search_read(domain, limit=1)
+                return objects[0] if objects else None
+
+            def create_or_update(self):
+                model_name = self._model_name()
+                vals = self.to_primitive()
+                vals.pop("id", None)
+                if self.id:
+                    self.odoo[model_name].write([self.id, vals])
+                else:
+                    self.id = self.odoo[model_name].create(vals)
+
+            def delete(self):
+                model_name = self._model_name()
+                if self.id:
+                    self.odoo[model_name].unlink([self.id])
+
+            def __repr__(self):
+                return f"<{self.__class__.__name__}(id={self.id})>"
+
+        return BaseModel
 
 
-class Model:
-    """Simplifies working with Odoo models through XML RPC.
+class ObjectProxy:
+    """Simplifies calling methods of Odoo models via the `execute_kw` RPC function.
 
     Args:
-        name: Odoo model name.
-        proxy: XML RPC server proxy.
-        db: The database to use.
-        uid: The user id (retrieved through `authenticate`).
-        password: The user’s password.
-
-    Examples:
-        >>> odoo["res.partner"].execute_kw("check_access_rights", "read",
-        ...                                raise_exception=False)
-        true
-
-    """
-
-    def __init__(
-        self,
-        name: str,
-        proxy: xmlrpc.client.ServerProxy,
-        db: str,
-        uid: int,
-        password: str,
-    ):
-        self.name = name
-        self.proxy = proxy
-        self.db = db
-        self.uid = uid
-        self.password = password
-
-    def execute_kw(self, method_name, *args, **kwargs):
-        """Call `method_name` on this model and return the result."""
-        return self.proxy.execute_kw(
-            self.db,
-            self.uid,
-            self.password,
-            self.name,
-            method_name,
-            args,
-            kwargs,
-        )
-
-    def __getattr__(self, name):
-        return Method(name, self)
-
-    def __repr__(self):
-        return (
-            f"<Model(name='{self.name}', proxy={self.proxy}, db='{self.db}')>"
-        )
-
-
-class Method:
-    """Simplifies calling methods on Odoo models through XML RPC.
-
-    Args:
-        name: The method name.
-        model: The Odoo model.
+        odoo: Instance of the `Odoo` class.
+        model_name: Odoo model name.
 
     Examples:
         >>> odoo["res.partner"].check_access_rights("read",
@@ -148,12 +159,39 @@ class Method:
 
     """
 
-    def __init__(self, name, model):
-        self.name = name
-        self.model = model
+    class Method:
+        def __init__(self, odoo: Odoo, model_name: str, name: str):
+            self.odoo = odoo
+            self.model_name = model_name
+            self.name = name
 
-    def __call__(self, *args, **kwargs):
-        return self.model.execute_kw(self.name, *args, **kwargs)
+        def __call__(self, *args, **kwargs):
+            db = current_app.config["ODOO_DB"]
+            password = current_app.config["ODOO_PASSWORD"]
+            return self.odoo.object.execute_kw(
+                db,
+                self.odoo.uid,
+                password,
+                self.model_name,
+                self.name,
+                args,
+                kwargs,
+            )
+
+        def __repr__(self):
+            return (
+                "<ObjectProxy.Method("
+                f"model_name={self.model_name}, "
+                f"name='{self.name}'"
+                ")>"
+            )
+
+    def __init__(self, odoo: Odoo, model_name: str):
+        self.odoo = odoo
+        self.model_name = model_name
+
+    def __getattr__(self, name):
+        return self.Method(self.odoo, self.model_name, name)
 
     def __repr__(self):
-        return f"<Method(name='{self.name}', model={self.model})>"
+        return f"<ObjectProxy(model_name='{self.model_name}')>"
