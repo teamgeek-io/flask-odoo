@@ -168,8 +168,7 @@ def test_base_model_search_read(app, app_context):
         is_active = schematics.types.BooleanType(serialized_name="active")
 
     domain = [["is_company", "=", True]]
-    objects = Partner.search_read(domain)
-
+    objects = Partner.search_read(domain, offset=100, limit=10)
     app_context.odoo_object.execute_kw.assert_called_with(
         "odoo",
         1,
@@ -177,8 +176,90 @@ def test_base_model_search_read(app, app_context):
         "res.partner",
         "search_read",
         (domain,),
-        {"fields": ["id", "name", "active"]},
+        {"fields": ["id", "name", "active"], "offset": 100, "limit": 10},
     )
     assert objects == [Partner(records[0]), Partner(records[1])]
     assert objects[0].is_active
     assert not objects[1].is_active
+
+
+def test_base_model_search_by_id(app, app_context):
+    odoo = Odoo(app)
+    app_context.odoo_common = MagicMock()
+    app_context.odoo_common.authenticate.return_value = 1
+    app_context.odoo_object = MagicMock()
+    app_context.odoo_object.execute_kw.return_value = [
+        {"id": 2, "name": "test_partner"}
+    ]
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+        name = schematics.types.StringType()
+
+    partner = Partner.search_by_id(2)
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo",
+        1,
+        "admin",
+        "res.partner",
+        "search_read",
+        ([["id", "=", 2]],),
+        {"fields": ["id", "name"], "limit": 1},
+    )
+    assert partner.id == 2
+    assert partner.name == "test_partner"
+
+
+def test_base_model_create_or_update(app, app_context):
+    odoo = Odoo(app)
+    app_context.odoo_common = MagicMock()
+    app_context.odoo_common.authenticate.return_value = 1
+    app_context.odoo_object = MagicMock()
+    app_context.odoo_object.execute_kw.return_value = 2
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+        name = schematics.types.StringType()
+
+    partner = Partner()
+    assert not partner.id
+    partner.name = "test_partner"
+    partner.create_or_update()
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo",
+        1,
+        "admin",
+        "res.partner",
+        "create",
+        ({"name": "test_partner"},),
+        {},
+    )
+    assert partner.id == 2
+    partner.name = "new_name"
+    partner.create_or_update()
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo",
+        1,
+        "admin",
+        "res.partner",
+        "write",
+        ([2, {"name": "new_name"}],),
+        {},
+    )
+
+
+def test_base_model_delete(app, app_context):
+    odoo = Odoo(app)
+    app_context.odoo_common = MagicMock()
+    app_context.odoo_common.authenticate.return_value = 1
+    app_context.odoo_object = MagicMock()
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+
+    partner = Partner()
+    partner.id = 2
+    partner.delete()
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo", 1, "admin", "res.partner", "unlink", ([2],), {}
+    )

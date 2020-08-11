@@ -88,6 +88,7 @@ class Odoo:
     def make_model_base(self):
         """Return a base that all models will inherit from."""
 
+        # TODO: In future, consider defining BaseModel outside this function
         class BaseModel(schematics.models.Model):
             odoo = self
             _name = None
@@ -104,17 +105,39 @@ class Odoo:
                 return cls.odoo[model_name].search_count(domain)
 
             @classmethod
-            def search_read(cls, domain=[], limit=None):
+            def search_read(cls, domain=[], offset=None, limit=None):
                 model_name = cls._model_name()
                 fields = [
                     field.serialized_name or name
                     for name, field in cls._schema.fields.items()
                 ]
                 kwargs = {"fields": fields}
+                if offset:
+                    kwargs["offset"] = offset
                 if limit:
                     kwargs["limit"] = limit
                 records = cls.odoo[model_name].search_read(domain, **kwargs)
                 return [cls(rec) for rec in records]
+
+            @classmethod
+            def search_by_id(cls, id):
+                domain = [["id", "=", id]]
+                objects = cls.search_read(domain, limit=1)
+                return objects[0] if objects else None
+
+            def create_or_update(self):
+                model_name = self._model_name()
+                vals = self.to_primitive()
+                vals.pop("id", None)
+                if self.id:
+                    self.odoo[model_name].write([self.id, vals])
+                else:
+                    self.id = self.odoo[model_name].create(vals)
+
+            def delete(self):
+                model_name = self._model_name()
+                if self.id:
+                    self.odoo[model_name].unlink([self.id])
 
         return BaseModel
 
