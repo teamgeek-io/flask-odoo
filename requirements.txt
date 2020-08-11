@@ -4,3 +4,10 @@
 #
 #    pip-compile
 #
+click==7.1.2              # via flask
+flask==1.1.2              # via Flask-Odoo (setup.py)
+itsdangerous==1.1.0       # via flask
+jinja2==2.11.2            # via flask
+markupsafe==1.1.1         # via jinja2
+schematics==2.1.0         # via Flask-Odoo (setup.py)
+werkzeug==1.0.1           # via flask
