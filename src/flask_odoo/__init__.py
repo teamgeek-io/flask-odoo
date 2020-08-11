@@ -103,6 +103,19 @@ class Odoo:
                 model_name = cls._model_name()
                 return cls.odoo[model_name].search_count(domain)
 
+            @classmethod
+            def search_read(cls, domain=[], limit=None):
+                model_name = cls._model_name()
+                fields = [
+                    field.serialized_name or name
+                    for name, field in cls._schema.fields.items()
+                ]
+                kwargs = {"fields": fields}
+                if limit:
+                    kwargs["limit"] = limit
+                records = cls.odoo[model_name].search_read(domain, **kwargs)
+                return [cls(rec) for rec in records]
+
         return BaseModel
 
 

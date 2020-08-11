@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import schematics.models
+import schematics.types
 
 from flask_odoo import ObjectProxy, Odoo
 
@@ -148,3 +149,36 @@ def test_base_model_search_count(app, app_context):
         "odoo", 1, "admin", "res.partner", "search_count", (domain,), {}
     )
     assert count == 2
+
+
+def test_base_model_search_read(app, app_context):
+    odoo = Odoo(app)
+    app_context.odoo_common = MagicMock()
+    app_context.odoo_common.authenticate.return_value = 1
+    app_context.odoo_object = MagicMock()
+    records = [
+        {"id": 1, "name": "rec1", "active": True},
+        {"id": 2, "name": "rec2", "active": False},
+    ]
+    app_context.odoo_object.execute_kw.return_value = records
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+        name = schematics.types.StringType()
+        is_active = schematics.types.BooleanType(serialized_name="active")
+
+    domain = [["is_company", "=", True]]
+    objects = Partner.search_read(domain)
+
+    app_context.odoo_object.execute_kw.assert_called_with(
+        "odoo",
+        1,
+        "admin",
+        "res.partner",
+        "search_read",
+        (domain,),
+        {"fields": ["id", "name", "active"]},
+    )
+    assert objects == [Partner(records[0]), Partner(records[1])]
+    assert objects[0].is_active
+    assert not objects[1].is_active
