@@ -11,7 +11,7 @@ Install and update using [pip](https://pip.pypa.io/en/stable/quickstart/):
 $ pip install -U Flask-Odoo
 ```
 
-# Example
+## Example
 
 Initialize the Flask extension:
 
@@ -46,7 +46,62 @@ or call a method on an Odoo model:
 true
 ```
 
-# Contributing
+If you prefer to use a higher level interface you can declare models by extending `odoo.Model` as follows:
+
+```
+import schematics
+
+class Partner(odoo.Model):
+    _name = "res.partner"
+
+    name = schematics.types.StringType()
+```
+
+count the number of records:
+
+```
+>>> Partner.search_count([["is_company", "=", True]])
+1
+```
+
+search and read records:
+
+```
+>>> Partner.search_read([["is_company", "=", True]])
+[<Partner(id=1)>]
+```
+
+read records by `id`:
+
+```
+>>> partner = Partner.search_by_id(1)
+>>> partner.name
+'Odoo'
+```
+
+create and update records:
+
+```
+>>> new_partner = Partner()
+>>> new_partner.name = "Teamgeek"
+>>> new_partner.id is None
+True
+>>> new_partner.create_or_update()
+>>> new_partner.id
+2
+```
+
+delete records:
+
+```
+>>> existing_partner = Partner()
+>>> existing_partner.id = 2
+>>> existing_partner.delete()
+```
+
+The `odoo.Model` base extends the [Schematics](https://github.com/schematics/schematics) `Model` class, which means that your models inherit all the capabilities of a Schematics model.
+
+## Contributing
 
 Setup your development environment by running:
 

@@ -263,3 +263,14 @@ def test_base_model_delete(app, app_context):
     app_context.odoo_object.execute_kw.assert_called_with(
         "odoo", 1, "admin", "res.partner", "unlink", ([2],), {}
     )
+
+
+def test_base_model_repr(app):
+    odoo = Odoo(app)
+
+    class Partner(odoo.Model):
+        _name = "res.partner"
+
+    partner = Partner()
+    partner.id = 1
+    assert str(partner) == "<Partner(id=1)>"

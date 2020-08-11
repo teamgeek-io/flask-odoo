@@ -139,6 +139,9 @@ class Odoo:
                 if self.id:
                     self.odoo[model_name].unlink([self.id])
 
+            def __repr__(self):
+                return f"<{self.__class__.__name__}(id={self.id})>"
+
         return BaseModel
 
 

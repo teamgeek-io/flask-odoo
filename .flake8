@@ -1,4 +1,4 @@
 [flake8]
 exclude = .git,__pycache__,.pytest_cache,layers/*,*local.py
 ignore = D203,W503,E203
-max-complexity = 11
+max-complexity = 12
