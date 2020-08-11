@@ -14,7 +14,7 @@ bleach==3.1.5             # via readme-renderer
 certifi==2020.6.20        # via requests
 cfgv==3.1.0               # via pre-commit
 chardet==3.0.4            # via doc8, requests
-click==7.1.2              # via black, flask
+click==7.1.2              # via -c requirements.txt, black, flask
 colorama==0.4.3           # via twine
 coverage==5.1             # via pytest-cov
 distlib==0.3.0            # via virtualenv
@@ -22,16 +22,17 @@ doc8==0.8.1               # via -r dev-requirements.in
 docutils==0.16            # via doc8, readme-renderer, restructuredtext-lint, sphinx
 filelock==3.0.12          # via virtualenv
 flake8==3.8.3             # via -r dev-requirements.in
-flask==1.1.2              # via -r dev-requirements.in
+flask==1.1.2              # via -c requirements.txt, -r dev-requirements.in
 identify==1.4.20          # via pre-commit
 idna==2.9                 # via requests
 imagesize==1.2.0          # via sphinx
 importlib-metadata==1.6.1  # via flake8, keyring, pluggy, pre-commit, pytest, twine, virtualenv
-itsdangerous==1.1.0       # via flask
-jinja2==2.11.2            # via flask, sphinx
+importlib-resources==3.0.0  # via -r dev-requirements.in
+itsdangerous==1.1.0       # via -c requirements.txt, flask
+jinja2==2.11.2            # via -c requirements.txt, flask, sphinx
 keyring==21.2.1           # via twine
 livereload==2.6.2         # via sphinx-autobuild
-markupsafe==1.1.1         # via jinja2
+markupsafe==1.1.1         # via -c requirements.txt, jinja2
 mccabe==0.6.1             # via flake8
 more-itertools==8.4.0     # via pytest
 nodeenv==1.4.0            # via pre-commit
@@ -81,9 +82,9 @@ virtualenv==20.0.25       # via pre-commit
 watchdog==0.10.3          # via sphinx-autobuild
 wcwidth==0.2.5            # via pytest
 webencodings==0.5.1       # via bleach
-werkzeug==1.0.1           # via flask
+werkzeug==1.0.1           # via -c requirements.txt, flask
 wheel==0.34.2             # via -r dev-requirements.in
-zipp==3.1.0               # via importlib-metadata
+zipp==3.1.0               # via importlib-metadata, importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

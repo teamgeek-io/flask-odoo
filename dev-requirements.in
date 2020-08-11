@@ -3,6 +3,7 @@ black
 doc8
 flake8
 Flask
+importlib-resources
 pre-commit
 pytest
 pytest-cov
