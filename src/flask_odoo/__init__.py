@@ -4,7 +4,7 @@ import xmlrpc.client
 import schematics
 from flask import _app_ctx_stack, current_app
 
-__version__ = "0.0.2"
+__version__ = "0.1.0"
 
 logger = logging.getLogger(__name__)
 
