@@ -37,7 +37,7 @@ def search_read(cls, search_criteria=None, offset=None, limit=None):
 
 
 def search_by_id(cls, id):
-    search_criteria = cls._construct_domain([["id", "=", id]])
+    search_criteria = [["id", "=", id]]
     objects = cls.search_read(search_criteria, limit=1)
     return objects[0] if objects else None
 
