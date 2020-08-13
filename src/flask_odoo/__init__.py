@@ -4,6 +4,7 @@ import xmlrpc.client
 from flask import _app_ctx_stack, current_app
 
 from .model import make_model_base
+from . import types
 
 __version__ = "0.1.0"
 
@@ -19,6 +20,8 @@ class Odoo:
     def __init__(self, app=None):
         self.app = app
         self.Model = make_model_base(self)
+        for name in types.__all__:
+            setattr(self, name, getattr(types, name))
 
         if self.app is not None:
             self.init_app(app)

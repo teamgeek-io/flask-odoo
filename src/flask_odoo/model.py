@@ -26,6 +26,7 @@ def search_read(cls, search_criteria=None, offset=None, limit=None):
     fields = [
         field.serialized_name or name
         for name, field in cls._schema.fields.items()
+        if not isinstance(field, schematics.types.Serializable)
     ]
     kwargs = {"fields": fields}
     if offset:
