@@ -49,12 +49,11 @@ true
 If you prefer to use a higher level interface you can declare models by extending `odoo.Model` as follows:
 
 ```
-import schematics
-
 class Partner(odoo.Model):
     _name = "res.partner"
+    _domain = [["active", "=", True]]
 
-    name = schematics.types.StringType()
+    name = odoo.StringType()
 ```
 
 count the number of records:
@@ -99,7 +98,7 @@ delete records:
 >>> existing_partner.delete()
 ```
 
-The `odoo.Model` base extends the [Schematics](https://github.com/schematics/schematics) `Model` class, which means that your models inherit all the capabilities of a Schematics model.
+The `odoo.Model` base extends the [Schematics](https://github.com/schematics/schematics) `Model` class, which means that your models inherit all the capabilities of a Schematics model. For convenience the basic Schematics types are accessible directly from the Odoo instance. These types also handle Odoo `False` values for non-boolean types.
 
 ## Contributing
 
