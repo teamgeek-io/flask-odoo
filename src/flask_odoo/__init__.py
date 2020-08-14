@@ -6,7 +6,7 @@ from flask import _app_ctx_stack, current_app
 from .model import make_model_base
 from . import types
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 logger = logging.getLogger(__name__)
 
