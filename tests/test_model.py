@@ -181,7 +181,7 @@ def test_base_model_create_or_update(app, app_context):
         "admin",
         "res.partner",
         "write",
-        ([2, {"name": "new_name"}],),
+        ([2], {"name": "new_name"}),
         {},
     )
 

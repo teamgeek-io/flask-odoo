@@ -56,11 +56,12 @@ def create_or_update(self):
         ):
             vals.pop(key, None)
         elif isinstance(field, Many2oneType):
-            vals[key] = vals[key][0]
+            if key in vals:
+                vals[key] = vals[key][0]
         else:
             pass
     if self.id:
-        self._odoo[model_name].write([self.id, vals])
+        self._odoo[model_name].write([self.id], vals)
     else:
         self.id = self._odoo[model_name].create(vals)
 
