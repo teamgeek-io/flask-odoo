@@ -1,5 +1,7 @@
 import schematics
 
+from .types import One2manyType, Many2oneType
+
 
 def _model_name(cls):
     return cls._name or cls.__name__.lower()
@@ -47,6 +49,16 @@ def create_or_update(self):
     model_name = self._model_name()
     vals = self.to_primitive()
     vals.pop("id", None)
+    for name, field in self._schema.fields.items():
+        key = field.serialized_name or name
+        if isinstance(field, schematics.types.Serializable) or isinstance(
+            field, One2manyType
+        ):
+            vals.pop(key, None)
+        elif isinstance(field, Many2oneType):
+            vals[key] = vals[key][0]
+        else:
+            pass
     if self.id:
         self._odoo[model_name].write([self.id, vals])
     else:

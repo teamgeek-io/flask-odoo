@@ -93,7 +93,14 @@ class Many2oneType(schematics.types.BaseType):
     def to_native(self, value, context=None):
         if value is False:
             return None
-        if isinstance(value, list):
+        if isinstance(value, int):
+            return [value, ""]
+        if isinstance(value, str):
+            try:
+                return [int(value), ""]
+            except ValueError:
+                raise ConversionError(self.messages["convert"].format(value))
+        if isinstance(value, list) or isinstance(value, tuple):
             if len(value) != self.length:
                 raise ConversionError(
                     self.messages["length"].format(self.length)
