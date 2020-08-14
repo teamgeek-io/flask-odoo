@@ -96,6 +96,10 @@ def test_many2one_type():
     with pytest.raises(schematics.exceptions.ConversionError):
         instance.to_native("")
     with pytest.raises(schematics.exceptions.ConversionError):
+        instance.to_native("invalid_format")
+    with pytest.raises(schematics.exceptions.ConversionError):
         instance.to_native(["Test", 1])
     assert instance.to_native([1, "Test"]) == [1, "Test"]
-    assert instance.to_native(["1", "Test"]) == [1, "Test"]
+    assert instance.to_native(("1", "Test")) == [1, "Test"]
+    assert instance.to_native(1) == [1, ""]
+    assert instance.to_native("1") == [1, ""]
