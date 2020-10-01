@@ -104,7 +104,9 @@ def test_base_model_search_read(app, app_context):
         is_active = odoo.BooleanType(serialized_name="active")
 
     search_criteria = [["is_company", "=", True]]
-    objects = Partner.search_read(search_criteria, offset=100, limit=10)
+    objects = Partner.search_read(
+        search_criteria, offset=100, limit=10, order="id"
+    )
     app_context.odoo_object.execute_kw.assert_called_with(
         "odoo",
         1,
@@ -112,7 +114,12 @@ def test_base_model_search_read(app, app_context):
         "res.partner",
         "search_read",
         (search_criteria,),
-        {"fields": ["id", "name", "active"], "offset": 100, "limit": 10},
+        {
+            "fields": ["id", "name", "active"],
+            "offset": 100,
+            "limit": 10,
+            "order": "id",
+        },
     )
     assert objects == [Partner(records[0]), Partner(records[1])]
     assert objects[0].is_active
