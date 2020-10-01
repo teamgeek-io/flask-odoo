@@ -7,7 +7,7 @@ def _model_name(cls):
     return cls._name or cls.__name__.lower()
 
 
-def _construct_domain(cls, search_criteria=None):
+def _construct_domain(cls, search_criteria: list = None):
     domain = []
     if cls._domain:
         domain.extend(cls._domain)
@@ -16,13 +16,19 @@ def _construct_domain(cls, search_criteria=None):
     return domain
 
 
-def search_count(cls, search_criteria=None):
+def search_count(cls, search_criteria: list = None):
     model_name = cls._model_name()
     domain = cls._construct_domain(search_criteria)
     return cls._odoo[model_name].search_count(domain)
 
 
-def search_read(cls, search_criteria=None, offset=None, limit=None):
+def search_read(
+    cls,
+    search_criteria: list = None,
+    offset: int = None,
+    limit: int = None,
+    order: str = None,
+):
     model_name = cls._model_name()
     domain = cls._construct_domain(search_criteria)
     fields = [
@@ -35,6 +41,8 @@ def search_read(cls, search_criteria=None, offset=None, limit=None):
         kwargs["offset"] = offset
     if limit:
         kwargs["limit"] = limit
+    if order:
+        kwargs["order"] = order
     records = cls._odoo[model_name].search_read(domain, **kwargs)
     return [cls(rec) for rec in records]
 
