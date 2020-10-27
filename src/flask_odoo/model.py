@@ -22,6 +22,11 @@ def search_count(cls, search_criteria: list = None):
     return cls._odoo[model_name].search_count(domain)
 
 
+def fields_get(cls):
+    model_name = cls._model_name()
+    return cls._odoo[model_name].fields_get()
+
+
 def search_read(
     cls,
     search_criteria: list = None,
@@ -80,6 +85,8 @@ def delete(self):
         self._odoo[model_name].unlink([self.id])
 
 
+
+
 def __repr__(self):
     return f"<{self.__class__.__name__}(id={self.id})>"
 
@@ -99,6 +106,7 @@ def make_model_base(odoo):
             search_count=classmethod(search_count),
             search_read=classmethod(search_read),
             search_by_id=classmethod(search_by_id),
+            fields_get=classmethod(fields_get),
             create_or_update=create_or_update,
             delete=delete,
             __repr__=__repr__,
