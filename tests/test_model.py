@@ -222,7 +222,7 @@ def test_base_model_create_or_update_no_serializable(app, app_context):
     )
 
 
-def test_base_model_create_or_update_no_one2many(app, app_context):
+def test_base_model_create_or_update_one2many(app, app_context):
     odoo = Odoo(app)
     app_context.odoo_common = MagicMock()
     app_context.odoo_common.authenticate.return_value = 1
@@ -244,7 +244,7 @@ def test_base_model_create_or_update_no_one2many(app, app_context):
         "admin",
         "res.partner",
         "create",
-        ({"name": "test_partner"},),
+        ({"name": "test_partner", "related_model_ids": [1, 2, 3]},),
         {},
     )
 
