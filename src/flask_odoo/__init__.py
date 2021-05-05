@@ -32,7 +32,7 @@ class Odoo:
         app.config.setdefault("ODOO_DB", "")
         app.config.setdefault("ODOO_USERNAME", "")
         app.config.setdefault("ODOO_PASSWORD", "")
-        app.config.setdefault("USE_UNVERIFIED_SSL_CONTEXT", "False")
+        app.config.setdefault("USE_UNVERIFIED_SSL_CONTEXT", "false")
 
         app.teardown_appcontext(self.teardown)
 
