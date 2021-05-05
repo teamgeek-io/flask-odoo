@@ -30,7 +30,7 @@ odoo = Odoo(app)
 if you are using a Mac you may need to set unverified ssl context
 
 ```
-app.config["USE_UNVERIFIED_SSL_CONTEXT"] = "true"
+app.config["USE_UNVERIFIED_SSL_CONTEXT"] = "True"
 ```
 
 then fetch the Odoo version information by:

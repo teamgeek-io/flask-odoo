@@ -10,7 +10,7 @@ def app():
     app.config["ODOO_DB"] = "odoo"
     app.config["ODOO_USERNAME"] = "admin"
     app.config["ODOO_PASSWORD"] = "admin"
-    app.config["USE_UNVERIFIED_SSL_CONTEXT"] = "false"
+    app.config["USE_UNVERIFIED_SSL_CONTEXT"] = "False"
     yield app
 
 
