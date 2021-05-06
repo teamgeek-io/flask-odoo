@@ -1,3 +1,5 @@
+import ast
+import ssl
 import logging
 import xmlrpc.client
 
@@ -31,6 +33,7 @@ class Odoo:
         app.config.setdefault("ODOO_DB", "")
         app.config.setdefault("ODOO_USERNAME", "")
         app.config.setdefault("ODOO_PASSWORD", "")
+        app.config.setdefault("USE_UNVERIFIED_SSL_CONTEXT", "False")
 
         app.teardown_appcontext(self.teardown)
 
@@ -46,8 +49,15 @@ class Odoo:
 
     def create_common_proxy(self):
         url = current_app.config["ODOO_URL"]
-        common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
-        return common
+        use_unverified_ssl_context = ast.literal_eval(
+            current_app.config["USE_UNVERIFIED_SSL_CONTEXT"]
+        )
+        if use_unverified_ssl_context:
+            return xmlrpc.client.ServerProxy(
+                f"{url}/xmlrpc/2/common",
+                context=ssl._create_unverified_context(),
+            )
+        return xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
 
     @property
     def common(self):
